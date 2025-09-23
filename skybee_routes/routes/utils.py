@@ -8,7 +8,6 @@ from amadeus import Client, ResponseError
 
 warnings.filterwarnings('ignore')
 
-# --- 1. LOAD AND PROCESS DATA ---
 print("Loading and preparing data...")
 DATA_LOADED_SUCCESSFULLY = False
 all_airports = []
@@ -48,13 +47,12 @@ try:
             distance = haversine(lat1, lon1, lat2, lon2)
             G.add_edge(source, dest, Distance_km=distance)
 
-    all_airports = sorted(list(G.nodes))
+    all_airports = sorted([node for node in G.nodes if len(node) == 3])
     print("Data loading complete.")
     DATA_LOADED_SUCCESSFULLY = True
 except Exception as e:
     print(f"An error occurred during data loading: {e}")
 
-# --- 2. AMADEUS API FUNCTION ---
 def get_flight_deals(source_iata, destination_iata):
     """Fetches flight deals from the Amadeus API."""
     try:
@@ -85,7 +83,6 @@ def get_flight_deals(source_iata, destination_iata):
         print(f"An unexpected error occurred with Amadeus API: {e}")
         return None
 
-# --- 3. A* ALGORITHM ---
 def get_astar_path(source, destination):
     """Calculates the shortest path using the A* algorithm."""
     if not DATA_LOADED_SUCCESSFULLY:
@@ -102,3 +99,63 @@ def get_astar_path(source, destination):
         return {'path': path, 'distance': distance}
     except (nx.NetworkXNoPath, KeyError):
         return {'path': [f"No path found from {source} to {destination}"], 'distance': 0}
+    
+def get_rl_path(source, destination):
+    if not DATA_LOADED_SUCCESSFULLY:
+        return {'path': ['Data not loaded'], 'distance': 0}
+    
+    routes_dict_rl = {u: {v: G.edges[u,v]['Distance_km'] for v in G.neighbors(u)} for u in G.nodes}
+    actions_rl = {node: list(neighbors.keys()) for node, neighbors in routes_dict_rl.items()}
+
+    alpha, gamma, epsilon, episodes = 0.4, 0.9, 1.0, 1000
+    Q = {state: {action: 0 for action in actions_rl.get(state, [])} for state in G.nodes}
+
+    def get_reward(current, next_state, dest):
+        distance = routes_dict_rl.get(current, {}).get(next_state, 0)
+        return 1000 if next_state == dest else -distance
+
+    def find_path_with_distance_rl(start, end):
+        state = start
+        path = [state]
+        total_distance = 0
+        max_steps = 100 
+        steps = 0
+        while state != end and steps < max_steps:
+            if not Q.get(state) or not actions_rl.get(state):
+                return ["Dead end at " + str(state)], 0
+            next_state = max(Q[state], key=Q[state].get, default=None)
+            if next_state is None:
+                return ["Could not find a path"], 0
+            distance = routes_dict_rl.get(state, {}).get(next_state, 0)
+            total_distance += distance
+            path.append(next_state)
+            state = next_state
+            steps += 1
+        if path[-1] != end:
+            return ["Path incomplete"], 0
+        return path, total_distance
+
+    # Training loop: THIS IS VERY SLOW for a web request.
+    for episode in range(episodes):
+        state = random.choice(list(G.nodes))
+        while state != destination:
+            if not actions_rl.get(state): break
+            if random.random() < epsilon:
+                next_state = random.choice(actions_rl[state])
+            else:
+                if not Q.get(state): break
+                next_state = max(Q[state], key=Q[state].get, default=None)
+                if next_state is None: break
+            
+            reward = get_reward(state, next_state, destination)
+            old_value = Q[state].get(next_state, 0)
+            max_future = max(Q.get(next_state, {}).values()) if Q.get(next_state) else 0
+            Q[state][next_state] = old_value + alpha * (reward + gamma * max_future - old_value)
+            state = next_state
+        
+        min_epsilon, max_epsilon, decay_rate = 0.01, 1.0, 0.005
+        epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-decay_rate * episode)
+    
+    final_path, final_distance = find_path_with_distance_rl(source, destination)
+    return {'path': final_path, 'distance': final_distance}
+    

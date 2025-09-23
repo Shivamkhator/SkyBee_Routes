@@ -27,18 +27,12 @@ def find_route_view(request):
         source = request.POST.get('source_airport')
         destination = request.POST.get('destination_airport')
         
-        # Ensure both source and destination are provided before proceeding
         if source and destination:
             astar_result = utils.get_astar_path(source, destination)
-            # Using A* again for speed, but you can swap in utils.get_rl_path if desired
-            rl_result = utils.get_astar_path(source, destination)
+            rl_result = utils.get_rl_path(source, destination)
 
-            # --- Logic to handle valid vs. invalid paths ---
-            # A valid path is a list of airport codes. 
-            # An invalid one will be a list containing a single string like "No path found...".
             is_valid_path = astar_result['path'] and "No path" not in astar_result['path'][0]
 
-            # Only attempt to create the map if a valid path was found.
             if is_valid_path:
                 source_coords_df = utils.airports_df[utils.airports_df['IATA'] == source]
                 if not source_coords_df.empty:
@@ -61,9 +55,6 @@ def find_route_view(request):
                 'astar': astar_result,
                 'rl': rl_result
             }
-
-            # --- RAG Logic for AI Flight Suggestions ---
-            # This will run even if no path is found, as direct flights might exist.
             flight_deals = utils.get_flight_deals(source, destination)
 
             if flight_deals and llm_model:
