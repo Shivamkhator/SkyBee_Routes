@@ -24,4 +24,4 @@ EXPOSE 8000
 
 # The command to run your application using Gunicorn
 # This tells Gunicorn to run the 'application' object found in the 'skybee_routes/wsgi.py' file
-CMD ["gunicorn", "skybee_routes.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "skybee_routes.wsgi:application", "--bind", "0.0.0.0:8000", "--timeout", "120"]
