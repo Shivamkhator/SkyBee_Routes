@@ -100,6 +100,20 @@ def get_astar_path(source, destination):
     except (nx.NetworkXNoPath, KeyError):
         return {'path': [f"No path found from {source} to {destination}"], 'distance': 0}
     
+def get_dijkstra_path(source, destination):
+    """Calculates the shortest path using Dijkstra's algorithm."""
+    if not DATA_LOADED_SUCCESSFULLY:
+        return {'path': ['Data not loaded'], 'distance': 0}
+    
+    try:
+        # Dijkstra's algorithm does not use a heuristic, only the actual weight (distance).
+        path = nx.dijkstra_path(G, source, destination, weight='Distance_km')
+        distance = nx.dijkstra_path_length(G, source, destination, weight='Distance_km')
+        return {'path': path, 'distance': distance}
+    except (nx.NetworkXNoPath, KeyError):
+        return {'path': [f"No path found from {source} to {destination}"], 'distance': 0}
+
+    
 def get_rl_path(source, destination):
     if not DATA_LOADED_SUCCESSFULLY:
         return {'path': ['Data not loaded'], 'distance': 0}

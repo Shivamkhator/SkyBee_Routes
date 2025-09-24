@@ -2,10 +2,10 @@ from django.shortcuts import render
 from . import utils
 import folium
 import os
+import time
+from datetime import date
 import google.generativeai as genai
 
-# --- Configure the Gemini API ---
-# IMPORTANT: Make sure your GEMINI_API_KEY is set as an environment variable
 try:
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
@@ -18,7 +18,6 @@ except Exception as e:
 
 
 def find_route_view(request):
-    # The list of airports for the dropdown now comes from the graph nodes in utils.py
     airport_list = utils.all_airports
     context = {'airport_list': airport_list}
     flight_suggestion = None 
@@ -28,8 +27,21 @@ def find_route_view(request):
         destination = request.POST.get('destination_airport')
         
         if source and destination:
+            start_time_astar = time.perf_counter()
             astar_result = utils.get_astar_path(source, destination)
-            rl_result = utils.get_rl_path(source, destination)
+            end_time_astar = time.perf_counter()
+            astar_time = (end_time_astar - start_time_astar)*1000  # in milliseconds
+
+            start_time_dijkstra = time.perf_counter()
+            dijkstra_result = utils.get_dijkstra_path(source, destination)
+            end_time_dijkstra = time.perf_counter()
+            dijkstra_time = (end_time_dijkstra - start_time_dijkstra)*1000  # in milliseconds
+            
+            time_difference_percent = 0
+            if dijkstra_time > 0:
+                time_difference_percent = ((dijkstra_time - astar_time) / dijkstra_time) * 100
+                
+            context['time_difference_percent'] = time_difference_percent
 
             is_valid_path = astar_result['path'] and "No path" not in astar_result['path'][0]
 
@@ -41,19 +53,17 @@ def find_route_view(request):
 
                     # Get coordinates for the paths directly from the graph attributes
                     astar_points = [(utils.G.nodes[apt]['lat'], utils.G.nodes[apt]['lon']) for apt in astar_result['path']]
-                    rl_points = [(utils.G.nodes[apt]['lat'], utils.G.nodes[apt]['lon']) for apt in rl_result['path']]
 
                     # Add the flight paths as lines on the map
                     folium.PolyLine(astar_points, color='blue', weight=2.5, opacity=1, tooltip="A* Path").add_to(m)
-                    folium.PolyLine(rl_points, color='red', weight=2.5, opacity=0.8, tooltip="RL Path").add_to(m)
-                    
+
                     # Add the generated map to the context for rendering
                     context['map'] = m._repr_html_()
 
             # Always add the results to the context, even if the path is invalid
             context['results'] = {
                 'astar': astar_result,
-                'rl': rl_result
+                'dijkstra': dijkstra_result
             }
             flight_deals = utils.get_flight_deals(source, destination)
 
