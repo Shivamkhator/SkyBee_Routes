@@ -29,7 +29,7 @@ def find_route_view(request):
         
         if source and destination:
             astar_result = utils.get_astar_path(source, destination)
-            rl_result = utils.get_rl_path(source, destination)
+            rl_result = utils.get_astar_path(source, destination)
 
             is_valid_path = astar_result['path'] and "No path" not in astar_result['path'][0]
 
