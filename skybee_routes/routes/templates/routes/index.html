@@ -3,19 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkyBee Routes - AI Path Finder</title>
+    <title>SkyBee Routes</title>
+    <meta name="description" content="AI-Powered Optimal Flight Path Finder by SkyBee">
+    <meta name="keywords" content="SkyBee, Flight Routes, Optimal Path, AI, Dijkstra, A* Search, Flight Planner">
+    <meta name="author" content="SkyVam: Shivam Khator">
 
-        <link rel="icon" href="https://skybee.vercel.app/SkyBee.png" type="image/png">
-
+    <link rel="icon" href="https://skybee.vercel.app/SkyBee.png" type="image/png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
 
+    <!-- Tom Select for advanced searchable dropdown menus -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 
     
     <script>
@@ -38,6 +43,7 @@
         .map-container .leaflet-container { border-radius: 0.75rem; }
         .dark .map-container .leaflet-tile-pane {
             filter: invert(1) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
 
         .dark .tom-select-dropdown, .dark .tom-select-input {
             background-color: #0a0a0a;
@@ -84,9 +90,9 @@
                     </div>
                     <p class="text-2xl font-bold text-slate-800 dark:text-dark-heading">SkyBee Routes</p>
                 </div>
-                <button id="theme-toggle" class="p-2 h-12 w-12 flex items-center justify-center rounded-full text-black dark:text-white focus:outline-none">
-                    <i class="iconify text-lg" data-icon="streamline-sharp:light-dark-mode" id="theme-icon-light"></i>
-                    <i class="iconify text-lg" data-icon="streamline-sharp:light-dark-mode" id="theme-icon-dark"></i>
+                <button id="theme-toggle" class="p-2 h-14 w-14 flex items-center justify-center rounded-full text-black dark:text-white focus:outline-none">
+                    <i class="iconify text-lg h-12 w-12" data-icon="streamline-sharp:light-dark-mode" id="theme-icon-light"></i>
+                    <i class="iconify text-lg h-12 w-12" data-icon="streamline-sharp:light-dark-mode" id="theme-icon-dark"></i>
                 </button>
             </div>
         </div>
