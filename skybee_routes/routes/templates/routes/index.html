@@ -84,7 +84,7 @@
                     </div>
                     <p class="text-2xl font-bold text-slate-800 dark:text-dark-heading">SkyBee Routes</p>
                 </div>
-                <button id="theme-toggle" class="p-2 h-10 w-10 flex items-center justify-center rounded-full text-black dark:text-white focus:outline-none">
+                <button id="theme-toggle" class="p-2 h-12 w-12 flex items-center justify-center rounded-full text-black dark:text-white focus:outline-none">
                     <i class="iconify text-lg" data-icon="streamline-sharp:light-dark-mode" id="theme-icon-light"></i>
                     <i class="iconify text-lg" data-icon="streamline-sharp:light-dark-mode" id="theme-icon-dark"></i>
                 </button>
@@ -133,7 +133,7 @@
                                     <span>Tips: Please select different airports for departure and arrival.</span>
                                 </p>
                                 <p class="w-full flex justify-center items-center mt-2">
-                                     <i class="fas fa-info-circle mr-2 text-red-500 mb-2"></i>
+                                     <i class="fas fa-info-circle mr-2 text-red-500"></i>
                     <span>Note: RL model isn't used here as it's too slow for a live website.</span>
                 </p>
                             </div>
@@ -176,7 +176,7 @@
                     <div class="p-6 sm:p-8">
                         <h3 class="text-2xl font-bold text-slate-900 dark:text-dark-heading flex items-center">
                             {% if flight_suggestion %}
-                                <i class="fas fa-ticket-alt mr-3 text-blue-500"></i>
+                                <i class="fas fa-ticket-alt mr-3 text-blue-500 dark:text-blue-300"></i>
                             {% else %}
                                 <i class="fas fa-info-circle mr-3 text-red-500"></i>
                             {% endif %}
@@ -209,7 +209,7 @@
     
     <footer class="text-center py-8 bg-white dark:bg-black">
         <a href="https://skybee.vercel.app" target="_blank" class="text-primary-DEFAULT font-semibold hover:underline">
-            <p class="text-sm text-yellow-500 dark:text-yellow-200">&copy; {% now "Y" %} SkyBee Routes: When AI Meets Aviation</p>
+            <p class="text-sm text-yellow-500 dark:text-yellow-200">&copy; {% now "Y" %} SkyBee Routes: Where AI Meets Sky</p>
         </a>
     </footer>
 
