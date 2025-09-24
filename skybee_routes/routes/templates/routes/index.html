@@ -5,15 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SkyBee Routes - AI Path Finder</title>
 
-        <link rel="icon" href="https://skybee.vercel.app/SkyBee.png" type="image/png">
+    <!-- Favicon -->
+    <link rel="icon" href="https://skybee.vercel.app/SkyBee.png" type="image/png">
 
-    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome for icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Iconify for additional icons -->
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
-    
+
+    <!-- Tom Select for searchable dropdowns -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
+    <!-- Tailwind theme configuration -->
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -22,13 +34,20 @@
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
                         primary: { DEFAULT: '#000000', hover: '#1d4ed8' },
-                        dark: { bg: '#040404', card: '#0a0a0a', border: '#374151', text: '#dfdfdf', heading: '#f9fafb' },
+                        dark: {
+                            bg: '#040404',
+                            card: '#0a0a0a',
+                            border: '#374151',
+                            text: '#dfdfdf',
+                            heading: '#f9fafb'
+                        },
                     }
                 }
             }
         }
     </script>
-    
+
+    <!-- Custom CSS -->
     <style>
         html { scroll-behavior: smooth; }
         .map-container .leaflet-container { border-radius: 0.75rem; }
@@ -39,16 +58,20 @@
 </head>
 <body class="bg-white dark:bg-black text-slate-800 dark:text-dark-text antialiased transition-colors duration-300">
 
+    <!-- Navbar -->
     <nav class="sticky top-0 z-50 bg-white dark:bg-dark-bg backdrop-blur-xl border-b border-slate-200 dark:border-dark-border shadow-sm">
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between h-20">
                 <div class="flex items-center space-x-4">
+                    <!-- Logo -->
                     <div class="h-12 w-12">
                         <img src="https://skybee.vercel.app/SkyBee.png" alt="SkyBee Logo" class="h-full w-full hidden dark:block">
                         <img src="https://skybee.vercel.app/SkyBee.svg" alt="SkyBee Logo" class="h-full w-full block dark:hidden">
                     </div>
                     <p class="text-2xl font-bold text-slate-800 dark:text-dark-heading">SkyBee Routes</p>
                 </div>
+
+                <!-- Theme toggle button -->
                 <button id="theme-toggle" class="p-2 h-10 w-10 flex items-center justify-center rounded-full text-black dark:text-white focus:outline-none">
                     <i class="iconify text-lg" data-icon="ph:sun-bold" id="theme-icon-light"></i>
                     <i class="iconify text-lg" data-icon="ph:moon-bold" id="theme-icon-dark"></i>
@@ -57,86 +80,123 @@
         </div>
     </nav>
 
+    <!-- Main content -->
     <main class="container mx-auto px-4 py-8 md:py-12">
         <div class="max-w-3xl mx-auto">
 
+            <!-- Flight Search Form -->
             <div class="bg-white dark:bg-dark-card border border-black dark:border-white rounded-2xl">
                 <div class="p-6 sm:p-8">
                     <h1 class="text-3xl md:text-4xl font-bold text-center text-slate-900 dark:text-dark-heading">Search Flights</h1>
-                    
+
                     <form method="POST" id="path-form" class="mt-8">
                         {% csrf_token %}
+
+                        <!-- Airport selection -->
                         <div class="grid grid-cols-1 md:grid-cols-11 gap-4 items-center">
+
+                            <!-- Source Airport -->
                             <div class="md:col-span-5">
                                 <label for="source_airport" class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Departure (required)</label>
-                                <select name="source_airport" id="source_airport" class="w-full p-3 border border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-dark-bg rounded-lg focus:ring-2 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT transition" required>
+                                <select name="source_airport" id="source_airport" required
+                                        class="w-full p-3 border border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-dark-bg rounded-lg focus:ring-2 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT transition">
                                     <option value="" disabled selected>Select airport</option>
-                                    {% for airport in airport_list %}<option value="{{ airport }}" {% if airport == selected_source %}selected{% endif %}>{{ airport }}</option>{% endfor %}
+                                    {% for airport in airport_list %}
+                                    <option value="{{ airport }}" {% if airport == selected_source %}selected{% endif %}>{{ airport }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
+
+                            <!-- Swap Button -->
                             <div class="md:col-span-1 flex justify-center">
-                                <button type="button" id="swap-airports" title="Swap airports" class="mt-6 h-10 w-10 bg-[#f0f0f0] dark:bg-[#3a3a3a] text-black dark:text-white rounded-full flex items-center justify-center transition-transform duration-300 hover:rotate-180">
+                                <button type="button" id="swap-airports" title="Swap airports"
+                                        class="mt-6 h-10 w-10 bg-[#f0f0f0] dark:bg-[#3a3a3a] text-black dark:text-white rounded-full flex items-center justify-center transition-transform duration-300 hover:rotate-180">
                                     <i class="fas fa-exchange-alt"></i>
                                 </button>
                             </div>
+
+                            <!-- Destination Airport -->
                             <div class="md:col-span-5">
                                 <label for="destination_airport" class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Arrival (required)</label>
-                                <select name="destination_airport" id="destination_airport" class="w-full p-3 border border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-dark-bg rounded-lg focus:ring-2 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT transition" required>
+                                <select name="destination_airport" id="destination_airport" required
+                                        class="w-full p-3 border border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-dark-bg rounded-lg focus:ring-2 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT transition">
                                     <option value="" disabled selected>Select airport</option>
-                                    {% for airport in airport_list %}<option value="{{ airport }}" {% if airport == selected_destination %}selected{% endif %}>{{ airport }}</option>{% endfor %}
+                                    {% for airport in airport_list %}
+                                    <option value="{{ airport }}" {% if airport == selected_destination %}selected{% endif %}>{{ airport }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
+
                         </div>
+
+                        <!-- Submit Button and Tips -->
                         <div class="mt-8">
-                            <button type="submit" id="submit-btn" class="w-full bg-primary-hover text-white font-bold py-4 px-4 rounded-lg transition-all duration-300 flex items-center justify-center text-lg shadow-md hover:shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed">
+                            <button type="submit" id="submit-btn"
+                                    class="w-full bg-primary-hover text-white font-bold py-4 px-4 rounded-lg transition-all duration-300 flex items-center justify-center text-lg shadow-md hover:shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed">
                                 <i class="fas fa-paper-plane mr-3"></i>
                                 <span id="submit-btn-text">Find Route</span>
                             </button>
+
                             <div class="mt-4 text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-dark-bg/70 p-3 rounded-lg">
                                 <p class="w-full flex justify-center items-center">
                                     <i class="fas fa-info-circle mr-2 text-red-500 mb-2"></i>
                                     <span>Tips: Please select different airports for departure and arrival.</span>
                                 </p>
                                 <p class="w-full flex justify-center items-center mt-2">
-                    <i class="fas fa-brain mr-2 text-blue-500"></i>
-                    <span>Note: RL model isn't used here as it is too slow for a live website.</span>
-                </p>
+                                    <i class="fas fa-brain mr-2 text-blue-500"></i>
+                                    <span>Note: RL model isn't used here as it is too slow for a live website.</span>
+                                </p>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
-            
+
+            <!-- Results Section -->
             {% if results %}
             <div id="results-section" class="mt-12 space-y-8">
+
+                <!-- Optimal Routes -->
                 <div class="bg-white dark:bg-dark-card border border-black dark:border-white rounded-2xl">
                     <div class="p-6 sm:p-8">
                         <h2 class="text-3xl font-bold text-center text-slate-900 dark:text-dark-heading">Optimal Route</h2>
                         <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                            <!-- Dijkstra -->
                             <div class="bg-blue-50 dark:bg-dark-bg p-5 rounded-xl border-gray-300">
-                                <h3 class="font-semibold text-lg text-black dark:text-white flex items-center"><i class="fas fa-star mr-2"></i>Optimal Path (Dijkstra)</h3>
+                                <h3 class="font-semibold text-lg text-black dark:text-white flex items-center">
+                                    <i class="fas fa-star mr-2"></i>Optimal Path (Dijkstra)
+                                </h3>
                                 <p class="text-3xl font-bold text-green-600 dark:text-green-300 mt-2">{{ results.dijkstra.distance|floatformat:2 }} km</p>
                                 <p class="text-sm text-slate-500 dark:text-slate-500 mt-1 break-words">{{ results.dijkstra.path|join:" &rarr; " }}</p>
                             </div>
+
+                            <!-- A* -->
                             <div class="bg-red-50 dark:bg-dark-bg p-5 rounded-xl border-gray-300">
-                                <h3 class="font-semibold text-lg text-black dark:text-white flex items-center"><i class="fas fa-brain mr-2"></i>Optimal Path (A*)</h3>
+                                <h3 class="font-semibold text-lg text-black dark:text-white flex items-center">
+                                    <i class="fas fa-brain mr-2"></i>Optimal Path (A*)
+                                </h3>
                                 <p class="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2">{{ results.astar.distance|floatformat:2 }} km</p>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 break-words">{{ results.astar.path|join:" &rarr; " }}</p>
                             </div>
+
                         </div>
 
+                        <!-- Time difference -->
                         <div class="mt-6 text-center">
                             <p class="text-lg font-medium text-slate-700 dark:text-slate-300">
                                 A* was <span class="font-bold text-green-600 dark:text-green-400">{{ time_difference_percent|floatformat:2 }}%</span> faster than Dijkstra's for finding this route.
                             </p>
                         </div>
 
+                        <!-- Map -->
                         <div class="mt-8 map-container bg-slate-200 dark:bg-dark-border rounded-lg">
                             {{ map|safe }}
                         </div>
                     </div>
                 </div>
 
+                <!-- AI Flight Suggestions -->
                 <div class="bg-white dark:bg-dark-card border border-black dark:border-white rounded-2xl">
                     <div class="p-6 sm:p-8">
                         <h3 class="text-2xl font-bold text-slate-900 dark:text-dark-heading flex items-center">
@@ -159,6 +219,7 @@
 
             </div>
             {% else %}
+            <!-- No Results Yet -->
             <div class="mt-12 bg-white dark:bg-dark-card shadow-lg rounded-2xl border border-black dark:border-white">
                 <div class="p-6 sm:p-8 text-center">
                     <div class="flex justify-center mb-4">
@@ -169,17 +230,22 @@
                 </div>
             </div>
             {% endif %}
+
         </div>
     </main>
-    
+
+    <!-- Footer -->
     <footer class="text-center py-8 bg-white dark:bg-black">
         <a href="https://skybee.vercel.app" target="_blank" class="text-primary-DEFAULT font-semibold hover:underline">
             <p class="text-sm text-yellow-500 dark:text-yellow-200">&copy; {% now "Y" %} SkyBee Routes: When AI Meets Aviation</p>
         </a>
     </footer>
 
+    <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
+            // Theme toggle
             const themeToggle = document.getElementById('theme-toggle');
             const lightIcon = document.getElementById('theme-icon-light');
             const darkIcon = document.getElementById('theme-icon-dark');
@@ -195,40 +261,63 @@
                     darkIcon.style.display = 'none';
                 }
             };
-            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+            const savedTheme = localStorage.getItem('theme') || 
+                               (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
             applyTheme(savedTheme);
+
             themeToggle.addEventListener('click', () => {
                 const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
                 localStorage.setItem('theme', newTheme);
                 applyTheme(newTheme);
             });
 
+            // Initialize Tom Select for airports
+            new TomSelect("#source_airport", {
+                maxOptions: 100,
+                create: false,
+                sortField: {field: "text", direction: "asc"},
+                placeholder: "Select airport"
+            });
+
+            new TomSelect("#destination_airport", {
+                maxOptions: 100,
+                create: false,
+                sortField: {field: "text", direction: "asc"},
+                placeholder: "Select airport"
+            });
+
+            // Form submit and swap logic
             const pathForm = document.getElementById('path-form');
             if (pathForm) {
                 const submitBtn = document.getElementById('submit-btn');
                 const submitBtnText = document.getElementById('submit-btn-text');
                 const sourceSelect = document.getElementById('source_airport');
                 const destSelect = document.getElementById('destination_airport');
-                
+
                 pathForm.addEventListener('submit', function(e) {
                     if (!sourceSelect.value || !destSelect.value || sourceSelect.value === destSelect.value) {
-                        e.preventDefault(); return;
+                        e.preventDefault();
+                        return;
                     }
                     submitBtn.disabled = true;
                     submitBtnText.textContent = 'Analyzing...';
                 });
-                
+
+                // Swap values for source/destination
                 document.getElementById('swap-airports').addEventListener('click', function() {
                     [sourceSelect.value, destSelect.value] = [destSelect.value, sourceSelect.value];
                 });
             }
 
+            // Scroll to results if available
             {% if results %}
             const resultsSection = document.getElementById('results-section');
             if (resultsSection) {
                 resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
             {% endif %}
+
         });
     </script>
 </body>
