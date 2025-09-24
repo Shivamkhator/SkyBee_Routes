@@ -238,17 +238,17 @@
                 applyTheme(newTheme);
             });
 
-            new TomSelect("#source_airport", {
-    maxOptions: 100,  // number of visible options
-    create: false,     // prevent free typing
-    sortField: {field: "text", direction: "asc"},
-});
+            const sourceTom = new TomSelect("#source_airport", {
+            maxOptions: 120,
+            create: false,
+            sortField: {field: "text", direction: "asc"},
+            });
 
-new TomSelect("#destination_airport", {
-    maxOptions: 100,
-    create: false,
-    sortField: {field: "text", direction: "asc"},
-});
+            const destTom = new TomSelect("#destination_airport", {
+            maxOptions: 120,
+            create: false,
+            sortField: {field: "text", direction: "asc"},
+        });
 
             const pathForm = document.getElementById('path-form');
             if (pathForm) {
@@ -266,7 +266,9 @@ new TomSelect("#destination_airport", {
                 });
                 
                 document.getElementById('swap-airports').addEventListener('click', function() {
-                    [sourceSelect.value, destSelect.value] = [destSelect.value, sourceSelect.value];
+                const temp = sourceTom.getValue();
+                sourceTom.setValue(destTom.getValue());
+                destTom.setValue(temp);
                 });
             }
 
