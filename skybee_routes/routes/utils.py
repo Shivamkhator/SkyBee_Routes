@@ -3,6 +3,7 @@ import numpy as np
 import networkx as nx
 import warnings
 import os
+import random
 from datetime import date
 from amadeus import Client, ResponseError
 
@@ -121,7 +122,7 @@ def get_rl_path(source, destination):
     routes_dict_rl = {u: {v: G.edges[u,v]['Distance_km'] for v in G.neighbors(u)} for u in G.nodes}
     actions_rl = {node: list(neighbors.keys()) for node, neighbors in routes_dict_rl.items()}
 
-    alpha, gamma, epsilon, episodes = 0.4, 0.9, 1.0, 1000
+    alpha, gamma, epsilon, episodes = 0.4, 0.9, 1.0, 50
     Q = {state: {action: 0 for action in actions_rl.get(state, [])} for state in G.nodes}
 
     def get_reward(current, next_state, dest):
@@ -132,7 +133,7 @@ def get_rl_path(source, destination):
         state = start
         path = [state]
         total_distance = 0
-        max_steps = 100 
+        max_steps = 100
         steps = 0
         while state != end and steps < max_steps:
             if not Q.get(state) or not actions_rl.get(state):
@@ -149,7 +150,6 @@ def get_rl_path(source, destination):
             return ["Path incomplete"], 0
         return path, total_distance
 
-    # Training loop: THIS IS VERY SLOW for a web request.
     for episode in range(episodes):
         state = random.choice(list(G.nodes))
         while state != destination:
