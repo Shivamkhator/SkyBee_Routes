@@ -92,6 +92,7 @@ def get_rl_path(source, destination):
     actions_rl = {node: list(neighbors.keys()) for node, neighbors in routes_dict_rl.items()}
 
     alpha, gamma, epsilon, episodes = 0.4, 0.9, 1.0, 50
+    alpha, gamma, epsilon, episodes = 0.4, 0.9, 1.0, 50
     Q = {state: {action: 0 for action in actions_rl.get(state, [])} for state in G.nodes}
 
     def get_reward(current, next_state, dest):
@@ -102,6 +103,7 @@ def get_rl_path(source, destination):
         state = start
         path = [state]
         total_distance = 0
+        max_steps = 100
         max_steps = 100
         steps = 0
         while state != end and steps < max_steps:
