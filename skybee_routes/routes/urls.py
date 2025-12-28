@@ -3,4 +3,5 @@ from . import views
 
 urlpatterns = [
     path('', views.find_route_view, name='home'),
+    path('offline/', views.find_route_offline_view, name='offline'),
 ]

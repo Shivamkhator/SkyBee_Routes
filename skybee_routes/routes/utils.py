@@ -3,8 +3,7 @@ import numpy as np
 import networkx as nx
 import warnings
 import os
-from datetime import date
-from amadeus import Client, ResponseError
+import random
 
 warnings.filterwarnings('ignore')
 
@@ -53,35 +52,6 @@ try:
 except Exception as e:
     print(f"An error occurred during data loading: {e}")
 
-def get_flight_deals(source_iata, destination_iata):
-    """Fetches flight deals from the Amadeus API."""
-    try:
-        amadeus = Client(
-            client_id=os.environ.get("AMADEUS_API_KEY"),
-            client_secret=os.environ.get("AMADEUS_API_SECRET"),
-        )
-        
-        # Search for flights using the system's current date
-        response = amadeus.shopping.flight_offers_search.get(
-            originLocationCode=source_iata,
-            destinationLocationCode=destination_iata,
-            departureDate=date.today().strftime("%Y-%m-%d"), # <-- THIS LINE IS ADDED BACK
-            adults=1,
-            max=3 
-        )
-        
-        deals = []
-        for offer in response.data:
-            price = f"{offer['price']['total']} {offer['price']['currency']}"
-            deals.append({"price": price})
-        return deals
-
-    except ResponseError as error:
-        print(f"Error fetching flight data from Amadeus: {error}")
-        return None
-    except Exception as e:
-        print(f"An unexpected error occurred with Amadeus API: {e}")
-        return None
 
 def get_astar_path(source, destination):
     """Calculates the shortest path using the A* algorithm."""
@@ -121,7 +91,7 @@ def get_rl_path(source, destination):
     routes_dict_rl = {u: {v: G.edges[u,v]['Distance_km'] for v in G.neighbors(u)} for u in G.nodes}
     actions_rl = {node: list(neighbors.keys()) for node, neighbors in routes_dict_rl.items()}
 
-    alpha, gamma, epsilon, episodes = 0.4, 0.9, 1.0, 1000
+    alpha, gamma, epsilon, episodes = 0.4, 0.9, 1.0, 50
     Q = {state: {action: 0 for action in actions_rl.get(state, [])} for state in G.nodes}
 
     def get_reward(current, next_state, dest):
@@ -132,7 +102,7 @@ def get_rl_path(source, destination):
         state = start
         path = [state]
         total_distance = 0
-        max_steps = 100 
+        max_steps = 100
         steps = 0
         while state != end and steps < max_steps:
             if not Q.get(state) or not actions_rl.get(state):
@@ -149,7 +119,6 @@ def get_rl_path(source, destination):
             return ["Path incomplete"], 0
         return path, total_distance
 
-    # Training loop: THIS IS VERY SLOW for a web request.
     for episode in range(episodes):
         state = random.choice(list(G.nodes))
         while state != destination:
