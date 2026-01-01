@@ -1,7 +1,21 @@
 from django.shortcuts import render
 from . import utils
 import folium
+import os
 import time
+from datetime import date
+import google.generativeai as genai
+
+try:
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        print("Warning: GEMINI_API_KEY environment variable not found.")
+    genai.configure(api_key=api_key)
+    llm_model = genai.GenerativeModel('gemini-1.5-flash')
+except Exception as e:
+    print(f"Error configuring Gemini API: {e}")
+    llm_model = None
+
 
 def find_route_view(request):
     airport_list = utils.all_airports
@@ -55,6 +69,27 @@ def find_route_view(request):
                 'astar': astar_result,
                 'dijkstra': dijkstra_result,
             }
+            flight_deals = utils.get_flight_deals(source, destination)
+
+            if flight_deals and llm_model:
+                prompt = f"""
+                You are a professional travel data analyst for the SkyBee Routes application.
+                Your tone must be formal, clear, and informative. Do not use conversational language or slang.
+
+                Based on the following flight data for a direct flight from {source} to {destination}, provide a concise summary of the available options.
+                List the prices in a clear, bulleted format.
+
+                Flight Data:
+                {flight_deals}
+                """
+                try:
+                    response = llm_model.generate_content(prompt)
+                    flight_suggestion = response.text
+                except Exception as e:
+                    print(f"Error generating content from LLM: {e}")
+                    flight_suggestion = "Sorry, AI-powered suggestions are currently unavailable."
+
+            context['flight_suggestion'] = flight_suggestion
 
     return render(request, 'routes/index.html', context)
 
@@ -124,9 +159,6 @@ def find_route_offline_view(request):
                 'dijkstra': dijkstra_result,
                 'reinforcement_learning': rl_result
             }
-<<<<<<< HEAD
-
-=======
             flight_deals = utils.get_flight_deals(source, destination)
 
             if flight_deals and llm_model:
@@ -148,7 +180,5 @@ def find_route_offline_view(request):
                     flight_suggestion = "Sorry, AI-powered suggestions are currently unavailable as you are using offline mode."
 
             context['flight_suggestion'] = flight_suggestion
->>>>>>> 2fc638e1305cc5ca86c64fca603b4d1efda24b40
 
     return render(request, 'routes/offline.html', context)
-
