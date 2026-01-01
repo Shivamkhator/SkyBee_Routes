@@ -6,15 +6,19 @@ import time
 from datetime import date
 import google.generativeai as genai
 
+llm_model = None
+
 try:
     api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        print("Warning: GEMINI_API_KEY environment variable not found.")
-    genai.configure(api_key=api_key)
-    llm_model = genai.GenerativeModel('gemini-1.5-flash')
+    if api_key:
+        genai.configure(api_key=api_key)
+        llm_model = genai.GenerativeModel("gemini-1.5-flash")
+    else:
+        print("Gemini disabled: GEMINI_API_KEY not set")
 except Exception as e:
     print(f"Error configuring Gemini API: {e}")
     llm_model = None
+
 
 
 def find_route_view(request):
